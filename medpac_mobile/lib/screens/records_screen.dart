@@ -40,6 +40,60 @@ class _RecordsScreenState extends State<RecordsScreen> with SingleTickerProvider
     },
   ];
 
+  final List<Map<String, dynamic>> _mockUploadReports = [
+    {
+      'title': 'Thyroid Profile (T3, T4, TSH)',
+      'clinic': 'Metro Thyroid Care',
+      'type': 'Lab Results',
+      'summary': 'TSH levels are elevated (5.4 uIU/mL), indicating mild subclinical hypothyroidism. T3 and T4 levels are within normal physiological ranges. Consult doctor for potential low-dose levothyroxine.',
+    },
+    {
+      'title': 'Lipid Profile (Fast, Serum)',
+      'clinic': 'Acura Labs & Diagnostics',
+      'type': 'Lab Results',
+      'summary': 'Total cholesterol (224 mg/dL) is high. LDL cholesterol (142 mg/dL) is borderline high. Triglycerides (155 mg/dL) are slightly elevated. Recommend dietary changes, cardiovascular exercise, and check-up in 3 months.',
+    },
+    {
+      'title': 'Chest X-Ray Diagnostic Report',
+      'clinic': 'Max Hospital Radiology',
+      'type': 'Lab Results',
+      'summary': 'Bony thorax and soft tissues are unremarkable. Heart size is normal. Lungs are clear, no focal consolidation, pleural effusion, or pneumothorax. Impression: Normal chest radiograph.',
+    },
+  ];
+
+  void _showUploadDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28.0)),
+          ),
+          padding: EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            top: 24.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+          ),
+          child: _UploadSimulationWidget(
+            mockReports: _mockUploadReports,
+            onUploadComplete: (newRecord) {
+              setState(() {
+                _records.insert(0, newRecord);
+              });
+            },
+            onViewSummary: (record) {
+              _showSummaryModal(record);
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -221,7 +275,7 @@ class _RecordsScreenState extends State<RecordsScreen> with SingleTickerProvider
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _showUploadDialog,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -373,6 +427,290 @@ class _RecordsScreenState extends State<RecordsScreen> with SingleTickerProvider
           ),
         );
       },
+    );
+  }
+}
+
+class _UploadSimulationWidget extends StatefulWidget {
+  final List<Map<String, dynamic>> mockReports;
+  final Function(Map<String, dynamic>) onUploadComplete;
+  final Function(Map<String, dynamic>) onViewSummary;
+
+  const _UploadSimulationWidget({
+    required this.mockReports,
+    required this.onUploadComplete,
+    required this.onViewSummary,
+  });
+
+  @override
+  State<_UploadSimulationWidget> createState() => _UploadSimulationWidgetState();
+}
+
+class _UploadSimulationWidgetState extends State<_UploadSimulationWidget> {
+  int _step = 0; // 0: Select, 1: Progress, 2: Success
+  double _progress = 0.0;
+  String _statusText = 'Initializing...';
+  Map<String, dynamic>? _selectedReport;
+  Map<String, dynamic>? _completedRecord;
+
+  void _runSimulation(Map<String, dynamic> report) async {
+    setState(() {
+      _selectedReport = report;
+      _step = 1;
+      _progress = 0.0;
+      _statusText = 'Uploading report PDF...';
+    });
+
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+    setState(() {
+      _progress = 0.3;
+      _statusText = 'Reading document structure...';
+    });
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    setState(() {
+      _progress = 0.6;
+      _statusText = 'Extracting biomarkers and reference ranges...';
+    });
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    setState(() {
+      _progress = 0.9;
+      _statusText = 'Generating smart health insight summary...';
+    });
+
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+    
+    final newRecord = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'title': report['title'],
+      'date': 'May 20, 2026',
+      'clinic': report['clinic'],
+      'type': report['type'],
+      'status': 'Analyzed',
+      'summary': report['summary'],
+    };
+
+    widget.onUploadComplete(newRecord);
+    _completedRecord = newRecord;
+
+    setState(() {
+      _progress = 1.0;
+      _step = 2;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (_step == 0) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 48,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24.0),
+          Row(
+            children: [
+              Icon(Icons.picture_as_pdf_rounded, color: colorScheme.primary, size: 28),
+              const SizedBox(width: 12.0),
+              const Text(
+                'Select Report to Upload',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            'Simulate AI extraction of biomarkers and diagnostic values',
+            style: TextStyle(
+              fontSize: 13.0,
+              color: colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 20.0),
+          ...widget.mockReports.map((report) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12.0),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+                side: BorderSide(
+                  color: colorScheme.onSurface.withOpacity(0.08),
+                ),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                leading: Container(
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.description_outlined, color: colorScheme.primary),
+                ),
+                title: Text(
+                  report['title'],
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                ),
+                subtitle: Text(
+                  'Format: PDF • ${report['clinic']}',
+                  style: TextStyle(fontSize: 12.0, color: colorScheme.onSurface.withOpacity(0.5)),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14.0),
+                onTap: () => _runSimulation(report),
+              ),
+            );
+          }),
+        ],
+      );
+    }
+
+    if (_step == 1) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 12.0),
+          SizedBox(
+            height: 80.0,
+            width: 80.0,
+            child: CircularProgressIndicator(
+              value: _progress,
+              strokeWidth: 6.0,
+              backgroundColor: colorScheme.primary.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            ),
+          ),
+          const SizedBox(height: 28.0),
+          Text(
+            'Processing Health PDF',
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            _statusText,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.5,
+              color: colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            '${(_progress * 100).toInt()}% Complete',
+            style: TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 12.0),
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 12.0),
+        Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.green.shade200,
+              width: 1.5,
+            ),
+          ),
+          child: Icon(
+            Icons.check_circle_rounded,
+            size: 56.0,
+            color: Colors.green.shade600,
+          ),
+        ),
+        const SizedBox(height: 24.0),
+        const Text(
+          'Analysis Completed!',
+          style: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8.0),
+        Text(
+          'Your report "${_selectedReport?['title']}" was successfully parsed and summarized by Medpac AI.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13.5,
+            color: colorScheme.onSurface.withOpacity(0.6),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 28.0),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.0),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14.0),
+                ),
+                child: const Text('Close'),
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (_completedRecord != null) {
+                      widget.onViewSummary(_completedRecord!);
+                    }
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.0),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14.0),
+                  elevation: 0,
+                ),
+                child: const Text('View Summary'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

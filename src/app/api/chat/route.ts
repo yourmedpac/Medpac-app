@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId, errorResponse } = verifyAuth(req);
+    if (errorResponse) return errorResponse;
+
     const body = await req.json();
     const { messages, quizData } = body;
+
 
     // Build system message with health context
     let systemMessage = `You are Medpac AI, a compassionate and knowledgeable health assistant for Indian families. You provide general health information, medicine guidance, lifestyle recommendations, and help understand medical reports.

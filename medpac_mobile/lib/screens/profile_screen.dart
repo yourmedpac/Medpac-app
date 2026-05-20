@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../user_state.dart';
+import '../widgets/medpac_logo.dart';
+import '../main.dart';
+import '../widgets/wearable_sync_sheet.dart';
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onLogout;
@@ -32,57 +35,102 @@ class ProfileScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: Container(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24.0),
-                  border: Border.all(
-                    color: colorScheme.onSurface.withOpacity(0.08),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: theme.brightness == Brightness.dark
+                        ? [
+                            colorScheme.surface,
+                            colorScheme.primary.withOpacity(0.08),
+                          ]
+                        : [
+                            colorScheme.surface,
+                            colorScheme.primary.withOpacity(0.04),
+                          ],
                   ),
+                  borderRadius: BorderRadius.circular(28.0),
+                  border: Border.all(
+                    color: colorScheme.primary.withOpacity(0.15),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.05),
+                      blurRadius: 16.0,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                child: Column(
+                child: Stack(
                   children: [
-                    CircleAvatar(
-                      radius: 46.0,
-                      backgroundColor: colorScheme.primary,
-                      child: const Icon(
-                        Icons.person,
-                        size: 50.0,
-                        color: Colors.white,
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Opacity(
+                        opacity: 0.15,
+                        child: const MedpacLogo(size: 28.0, showBackground: false),
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    Text(
-                      userState.userName,
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      '${userState.userEmail} • ${userState.userPhone}',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 12.0),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: Text(
-                        'Patient ID: MP-894032',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colorScheme.primary,
+                              width: 2.0,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 46.0,
+                            backgroundColor: colorScheme.primaryContainer,
+                            backgroundImage: const NetworkImage(
+                              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+                            ),
+                            onBackgroundImageError: (exception, stackTrace) {},
+                            child: const SizedBox.shrink(),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 16.0),
+                        Text(
+                          userState.userName,
+                          style: TextStyle(
+                            fontSize: 22.0,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 6.0),
+                        Text(
+                          '${userState.userEmail} • ${userState.userPhone}',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Text(
+                            'Patient ID: MP-894032',
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -156,9 +204,35 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       children: [
                          _buildSettingsRow(Icons.shield_rounded, 'Insurance Details', 'Aetna • Policy #8493', colorScheme),
-                        _buildSettingsRow(Icons.devices_rounded, 'Connected Devices', 'Apple Health, Fitbit', colorScheme),
+                        _buildSettingsRow(
+                          Icons.devices_rounded,
+                          'Connected Devices',
+                          UserState().isWatchSynced ? 'Watch Synced ✓' : 'Tap to sync wearable',
+                          colorScheme,
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => WearableSyncSheet(
+                                onSyncComplete: () {},
+                              ),
+                            );
+                          },
+                        ),
                         _buildSettingsRow(Icons.security_rounded, 'Privacy & Permissions', 'Manage data sharing', colorScheme),
-                        _buildSettingsRow(Icons.dark_mode_rounded, 'Dark Mode', 'Default to Slate Theme', colorScheme),
+                        _buildSettingsRow(
+                          Icons.dark_mode_rounded,
+                          Theme.of(context).brightness == Brightness.dark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                          Theme.of(context).brightness == Brightness.dark ? 'Currently: Dark Theme' : 'Currently: Light Theme',
+                          colorScheme,
+                          onTap: () {
+                            final newMode = Theme.of(context).brightness == Brightness.dark
+                                ? ThemeMode.light
+                                : ThemeMode.dark;
+                            MedpacApp.setThemeMode(context, newMode);
+                          },
+                        ),
                         _buildSettingsRow(
                           Icons.logout_rounded,
                           'Log Out',

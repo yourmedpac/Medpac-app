@@ -1,4 +1,4 @@
-package com.example.medpac_mobile
+package com.medpac.app
 
 import io.flutter.embedding.android.FlutterActivity
 

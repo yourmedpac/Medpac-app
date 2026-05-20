@@ -17,11 +17,23 @@ void main() async {
 class MedpacApp extends StatefulWidget {
   const MedpacApp({super.key});
 
+  static void setThemeMode(BuildContext context, ThemeMode mode) {
+    _MedpacAppState.setThemeMode(context, mode);
+  }
+
   @override
   State<MedpacApp> createState() => _MedpacAppState();
 }
 
 class _MedpacAppState extends State<MedpacApp> {
+  static ThemeMode currentThemeMode = ThemeMode.dark;
+
+  static void setThemeMode(BuildContext context, ThemeMode mode) {
+    currentThemeMode = mode;
+    final state = context.findAncestorStateOfType<_MedpacAppState>();
+    state?.setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final userState = UserState();
@@ -51,19 +63,19 @@ class _MedpacAppState extends State<MedpacApp> {
     return MaterialApp(
       title: 'Medpac Health OS',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark, // Default to a gorgeous dark mode for the premium wow-factor
+      themeMode: currentThemeMode,
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF006B59), // Brand Teal
+          seedColor: const Color(0xFF006565),
           brightness: Brightness.light,
-          primary: const Color(0xFF006B59),
-          secondary: const Color(0xFF0BA68C), // Brand Teal-mint
+          primary: const Color(0xFF006565),
+          secondary: const Color(0xFFAE2F34),
           surface: const Color(0xFFFFFFFF),
-          background: const Color(0xFFF9F9FF),
+          background: const Color(0xFFF5F7F6),
         ),
-        scaffoldBackgroundColor: const Color(0xFFF9F9FF),
+        scaffoldBackgroundColor: const Color(0xFFF5F7F6),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -75,12 +87,12 @@ class _MedpacAppState extends State<MedpacApp> {
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF006B59),
+          seedColor: const Color(0xFF006565),
           brightness: Brightness.dark,
-          primary: const Color(0xFF006B59),
-          secondary: const Color(0xFF0BA68C),
-          surface: const Color(0xFF191C1B), // M3 Surface container
-          background: const Color(0xFF111413), // M3 background
+          primary: const Color(0xFF00857A),
+          secondary: const Color(0xFFCF5C60),
+          surface: const Color(0xFF1A1F1E),
+          background: const Color(0xFF111413),
         ),
         scaffoldBackgroundColor: const Color(0xFF111413),
         appBarTheme: const AppBarTheme(
@@ -109,14 +121,24 @@ class MainNavigationShell extends StatefulWidget {
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentIndex = 0;
-
   late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
     _screens = [
-      const HomeScreen(),
+      HomeScreen(
+        onProfileTap: () {
+          setState(() {
+            _currentIndex = 4;
+          });
+        },
+        onNavigateToTab: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
       const AiAssistantScreen(),
       const MedicinesScreen(),
       const RecordsScreen(),
@@ -146,7 +168,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -178,7 +200,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         decoration: BoxDecoration(
           color: isSelected ? activeColor.withOpacity(0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(16.0),
@@ -189,13 +211,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             Icon(
               icon,
               color: isSelected ? activeColor : inactiveColor,
-              size: 24.0,
+              size: 22.0,
             ),
-            const SizedBox(height: 4.0),
+            const SizedBox(height: 2.0),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: 9.0,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? activeColor : inactiveColor,
               ),

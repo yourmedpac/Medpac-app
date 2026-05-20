@@ -10,8 +10,8 @@ class UserState {
   final _storage = const FlutterSecureStorage();
 
   // API URL Configuration
-  // Fallback to local network loopback for Android emulator, or you can point to hosted staging/production
-  String apiBaseUrl = 'http://10.0.2.2:3000';
+  // Points to the live Vercel production backend
+  String apiBaseUrl = 'https://medpac-health-os.vercel.app';
 
   bool isLoggedIn = false;
   bool isQuizCompleted = false;
@@ -21,6 +21,11 @@ class UserState {
   String userEmail = 'prabh@medpac.io';
   String userPhone = '+91 98765 43210';
   String loginMethod = 'Phone';
+
+  // Watch Telemetry Data
+  String watchHeartRate = '72 bpm';
+  String watchSleepScore = '82/100';
+  bool isWatchSynced = false;
 
   // Load state from secure storage
   Future<void> loadPersistedState() async {
@@ -33,6 +38,9 @@ class UserState {
       userEmail = await _storage.read(key: 'userEmail') ?? 'prabh@medpac.io';
       userPhone = await _storage.read(key: 'userPhone') ?? '+91 98765 43210';
       loginMethod = await _storage.read(key: 'loginMethod') ?? 'Phone';
+      watchHeartRate = await _storage.read(key: 'watchHeartRate') ?? '72 bpm';
+      watchSleepScore = await _storage.read(key: 'watchSleepScore') ?? '82/100';
+      isWatchSynced = (await _storage.read(key: 'isWatchSynced')) == 'true';
     } catch (_) {
       isLoggedIn = false;
       isQuizCompleted = false;
@@ -136,6 +144,62 @@ class UserState {
     await _storage.write(key: 'isQuizCompleted', value: 'true');
   }
 
+  Future<void> updateWatchData(String heartRate, String sleepScore) async {
+    watchHeartRate = heartRate;
+    watchSleepScore = sleepScore;
+    isWatchSynced = true;
+    await _storage.write(key: 'watchHeartRate', value: heartRate);
+    await _storage.write(key: 'watchSleepScore', value: sleepScore);
+    await _storage.write(key: 'isWatchSynced', value: 'true');
+
+    // Attempt backend sync in the background
+    syncVitalsToBackend();
+  }
+
+  Future<bool> syncVitalsToBackend() async {
+    if (!isLoggedIn || token == null) return false;
+    
+    try {
+      // 1. Sync Heart Rate
+      final cleanHeartRate = watchHeartRate.replaceAll(RegExp(r'[^0-9]'), '');
+      if (cleanHeartRate.isNotEmpty) {
+        await http.post(
+          Uri.parse('$apiBaseUrl/api/vitals'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'type': 'HEART_RATE',
+            'value': cleanHeartRate,
+            'unit': 'bpm',
+          }),
+        ).timeout(const Duration(seconds: 4));
+      }
+
+      // 2. Sync Sleep Score
+      final cleanSleep = watchSleepScore.split('/').first.trim();
+      if (cleanSleep.isNotEmpty) {
+        await http.post(
+          Uri.parse('$apiBaseUrl/api/vitals'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'type': 'SLEEP_SCORE',
+            'value': cleanSleep,
+            'unit': '/100',
+          }),
+        ).timeout(const Duration(seconds: 4));
+      }
+      return true;
+    } catch (e) {
+      print('Failed to sync vitals to backend database: $e');
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     isLoggedIn = false;
     isQuizCompleted = false;
@@ -145,6 +209,9 @@ class UserState {
     loginMethod = 'Phone';
     userId = null;
     token = null;
+    watchHeartRate = '72 bpm';
+    watchSleepScore = '82/100';
+    isWatchSynced = false;
 
     await _storage.deleteAll();
   }

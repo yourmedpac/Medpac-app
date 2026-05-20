@@ -172,15 +172,23 @@ export default function HomeScreen() {
         <header className="bg-white dark:bg-card border-b border-border/40 sticky top-0 w-full z-50 flex justify-between items-center px-4 h-16 md:shadow-none">
           <button 
             onClick={() => setScreen('profile')}
-            className="text-on-surface-variant hover:bg-muted transition-colors p-2 rounded-full cursor-pointer active:scale-95 transition-transform"
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-muted transition-colors cursor-pointer active:scale-95"
+            aria-label="Profile"
           >
-            <span className="material-symbols-outlined align-middle">menu</span>
+            <Avatar className="h-8 w-8 border border-border shadow-sm">
+              {user?.avatar ? (
+                <AvatarImage src={user.avatar} alt={userName} />
+              ) : null}
+              <AvatarFallback className="bg-gradient-to-br from-teal-500 to-emerald-500 text-white text-xs font-medium">
+                {userName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </button>
           <div className="flex items-center justify-center cursor-pointer" onClick={() => setScreen('home')}>
             <img 
               alt="MedPac Logo" 
               className="h-8 object-contain" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZUqk9th6TsKVoAl5zRfcov49XASnUX3Z-NOUUfeFKy6J58IBbi6uFDbHvKQTs517IAnIj4S45yik9XRBY_Uxt8-keusiWMPTTFUp9fnL3J_IYTHZK806eoPGSNtvQVe7Z3-a_bt5ExpRHY5O3E587qL2ZO3WrNJJ-Bxd9dIwCGvZdT8tsMO8cuLH98LRnj1WjUQd6Ebx1oGvbuOASxuVg4ke4a7OFZRvvThnN1CT_ANv-zESTVrtKOtFZ3HC-nqHa5eqB_TxduNA"
+              src="/logo.svg"
             />
           </div>
           <button 

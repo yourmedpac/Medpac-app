@@ -286,9 +286,38 @@ Added functional light/dark mode switching and aligned all theme colors to offic
 
 
  
- # # #   P h a s e   6 :   P r o d u c t i o n   D e p l o y m e n t   &   B a c k e n d   B i n d i n g 
- -   * * N e x t . j s   A d m i n   P a n e l   D e p l o y m e n t : * *   C o n f i g u r e d   t h e   p r o j e c t   f o r   V e r c e l ,   r e m o v e d   s t a n d a l o n e   s t a t i c   o u t p u t   f o r   c o m p a t i b i l i t y ,   i n j e c t e d   p r o d u c t i o n   e n v i r o n m e n t   v a r i a b l e s   s e c u r e l y   v i a   C L I ,   a n d   d e p l o y e d   t h e   A d m i n   P a n e l   t o   t h e   l i v e   w e b   ( h t t p s : / / m e d p a c - h e a l t h - o s . v e r c e l . a p p ) . 
- -   * * F l u t t e r   A P I   B i n d i n g : * *   U p d a t e d   u s e r _ s t a t e . d a r t   t o   p o i n t    p i B a s e U r l   f r o m   t h e   l o c a l   e m u l a t o r   1 0 . 0 . 2 . 2 : 3 0 0 0   d i r e c t l y   t o   t h e   l i v e   V e r c e l   p r o d u c t i o n   d e p l o y m e n t . 
- -   * * P r o d u c t i o n   I n t e g r a t i o n : * *   V a l i d a t e d   t h a t   t h e   m o b i l e   a p p ' s   s i m u l a t e d   G o o g l e   A u t h   a n d   S i g n - u p   n o w   r e l i a b l y   p i n g   t h e   l i v e   V e r c e l   e n d p o i n t   ( \ / a p i / a u t h / m o b i l e - s y n c \ )   t o   s e c u r e l y   r e a d / w r i t e   r e a l   c r e d e n t i a l s   i n t o   t h e   r e m o t e   S u p a b a s e   P o s t g r e S Q L   d a t a b a s e .  
- 
+ 
+ # # #   P h a s e   6 :   P r o d u c t i o n   D e p l o y m e n t   &   B a c k e n d   B i n d i n g 
+ -   * * N e x t . j s   A d m i n   P a n e l   D e p l o y m e n t : * *   C o n f i g u r e d   t h e   p r o j e c t   f o r   V e r c e l ,   r e m o v e d   s t a n d a l o n e   s t a t i c   o u t p u t   f o r   c o m p a t i b i l i t y ,   i n j e c t e d   p r o d u c t i o n   e n v i r o n m e n t   v a r i a b l e s   s e c u r e l y   v i a   C L I ,   a n d   d e p l o y e d   t h e   A d m i n   P a n e l   t o   t h e   l i v e   w e b   ( h t t p s : / / m e d p a c - h e a l t h - o s . v e r c e l . a p p ) . 
+ -   * * F l u t t e r   A P I   B i n d i n g : * *   U p d a t e d   u s e r _ s t a t e . d a r t   t o   p o i n t     p i B a s e U r l   f r o m   t h e   l o c a l   e m u l a t o r   1 0 . 0 . 2 . 2 : 3 0 0 0   d i r e c t l y   t o   t h e   l i v e   V e r c e l   p r o d u c t i o n   d e p l o y m e n t . 
+ -   * * P r o d u c t i o n   I n t e g r a t i o n : * *   V a l i d a t e d   t h a t   t h e   m o b i l e   a p p ' s   s i m u l a t e d   G o o g l e   A u t h   a n d   S i g n - u p   n o w   r e l i a b l y   p i n g   t h e   l i v e   V e r c e l   e n d p o i n t   ( \ / a p i / a u t h / m o b i l e - s y n c \ )   t o   s e c u r e l y   r e a d / w r i t e   r e a l   c r e d e n t i a l s   i n t o   t h e   r e m o t e   S u p a b a s e   P o s t g r e S Q L   d a t a b a s e .  
+ 
 - **Admin Panel Updates:** Updated the Next.js API \/api/admin/users\ to fetch telemedicine consultations. Updated the Admin Panel UI to display live user Consultations alongside their Vitals and Medications.
+
+---
+
+### Phase 7: Analytics & Admin Polishing
+
+1. **Integrated Recharts for Admin Dashboard Analytics:**
+   - **File modified:** `src/app/admin/page.tsx`
+   - **Change:** Integrated `recharts` charts displaying BMI Distribution (PieChart), Consultation Status (PieChart), and an Onboarding Funnel (BarChart).
+   - **Reason:** To provide a high-level overview of live system metrics and user engagement on the global admin dashboard.
+
+2. **Custom Branding:**
+   - **File modified:** `src/app/admin/page.tsx`
+   - **Change:** Replaced the generic `ShieldAlert` with a custom `<MedpacLogo>` SVG matching the Medpac identity. Switched teal/blue gradients to official brand colors (`#008e3e` for green, `#002d64` for navy).
+
+3. **Vercel Production Sync:**
+   - Deployed these latest data and UI binding updates to the live Vercel environment so the live dashboard matches the local updates.
+
+### Phase 8: Profile Navigation Fix
+
+1. **Top Navigation Profile Visibility:**
+   - **File modified:** src/app/components/medpac/home-screen.tsx`n   - **Change:** Replaced the generic menu icon in the top header with the Avatar component that displays the user's initial or profile picture, linking it to the profile screen.
+   - **Reason:** The profile section was not clearly visible/functional because it was disguised as a generic menu button.
+
+
+## Phase 9: Storage Optimization and Branding Updates
+- **Next.js Web Favicon**: Replaced default favicon with Medpac logo (src/app/icon.svg).
+- **Flutter Mobile App Icon**: Converted Medpac SVG logo to PNG, configured \lutter_launcher_icons\ in \pubspec.yaml\, and generated new Android launcher icons.
+- **Storage Optimization**: Ran \lutter clean\ and updated build command to use \--split-per-abi\ which reduced the APK size from ~50MB to ~15-18MB by splitting it per architecture.

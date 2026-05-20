@@ -21,8 +21,35 @@ import {
   User,
   Phone,
   Mail,
-  AlertTriangle
+  AlertTriangle,
+  Stethoscope,
+  ActivitySquare
 } from "lucide-react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+
+const MedpacLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M40 10 h30 v30 h30 v30 h-30 v30 h-30 v-30 h-30 v-30 h30 z" fill="#008e3e" />
+    <path d="M40 70 A 20 20 0 0 1 70 40 L 90 60 A 20 20 0 0 1 60 90 Z" fill="#002d64" />
+    <text x="110" y="80" fontFamily="sans-serif" fontWeight="900" fontSize="85" letterSpacing="-4">
+      <tspan fill="#008e3e">med</tspan><tspan fill="#002d64">pac</tspan>
+    </text>
+    <rect x="110" y="95" width="130" height="6" fill="#008e3e" />
+    <rect x="240" y="95" width="140" height="6" fill="#002d64" />
+  </svg>
+);
 
 interface UserProfile {
   age?: number;
@@ -233,6 +260,29 @@ export default function AdminDashboard() {
   const totalMedicationsCount = users.reduce((acc, curr) => acc + (curr.medications?.length || 0), 0);
   const totalVitalsCount = users.reduce((acc, curr) => acc + (curr.vitals?.length || 0), 0);
 
+  // Analytics Data
+  const bmiCategories = users.reduce((acc, user) => {
+    if (user.profile?.bmiCategory) {
+      acc[user.profile.bmiCategory] = (acc[user.profile.bmiCategory] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  const bmiData = Object.entries(bmiCategories).map(([name, value]) => ({ name, value }));
+
+  const allConsults = users.flatMap(u => u.consultations || []);
+  const consultStatuses = allConsults.reduce((acc, c) => {
+    acc[c.status] = (acc[c.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const consultData = Object.entries(consultStatuses).map(([name, value]) => ({ name, value }));
+
+  const funnelData = [
+    { name: 'Registered', count: totalUsers },
+    { name: 'Onboarded', count: quizCompletedCount },
+  ];
+
+  const BRAND_COLORS = ['#008e3e', '#002d64', '#0ea5e9', '#f59e0b', '#ef4444'];
+
   if (!token) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center relative overflow-hidden p-4">
@@ -247,10 +297,10 @@ export default function AdminDashboard() {
           className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl relative z-10"
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-500 to-blue-600 flex items-center justify-center shadow-lg shadow-teal-500/20 mb-4">
-              <ShieldAlert className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-[#008e3e]/10 flex items-center justify-center mb-4">
+              <MedpacLogo className="w-12 h-12" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">Medpac Health OS</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Health OS</h1>
             <p className="text-slate-400 text-sm mt-1">Administrative Terminal Portal</p>
           </div>
 
@@ -270,7 +320,7 @@ export default function AdminDashboard() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@medpac.in"
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-teal-500/80 focus:ring-1 focus:ring-teal-500/30 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 transition-all outline-none"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-[#008e3e]/80 focus:ring-1 focus:ring-[#008e3e]/30 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 transition-all outline-none"
               />
             </div>
 
@@ -282,14 +332,14 @@ export default function AdminDashboard() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-950/60 border border-slate-800 focus:border-teal-500/80 focus:ring-1 focus:ring-teal-500/30 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 transition-all outline-none"
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-[#008e3e]/80 focus:ring-1 focus:ring-[#008e3e]/30 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 transition-all outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 mt-6 cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#008e3e] to-[#002d64] hover:from-[#007a34] hover:to-[#001f46] text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-[#008e3e]/10 hover:shadow-[#008e3e]/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 mt-6 cursor-pointer"
             >
               {isLoading ? (
                 <RefreshCw className="w-5 h-5 animate-spin" />
@@ -310,11 +360,11 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-slate-900/40 backdrop-blur-xl border-b border-slate-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-blue-600 flex items-center justify-center">
-            <ShieldAlert className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-[#008e3e]/10 flex items-center justify-center">
+            <MedpacLogo className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-teal-400 to-blue-500 bg-clip-text text-transparent">Medpac OS</h1>
+            <h1 className="text-lg font-bold tracking-tight text-white">Health OS</h1>
             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Admin Panel v1.0</p>
           </div>
         </div>
@@ -425,6 +475,102 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
         </section>
+
+        {/* Analytics Dashboard */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Onboarding Funnel */}
+          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#008e3e]" />
+              Onboarding Funnel
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+                  <XAxis type="number" stroke="#94a3b8" fontSize={12} />
+                  <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={12} width={80} />
+                  <RechartsTooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
+                    itemStyle={{ color: '#e2e8f0' }}
+                  />
+                  <Bar dataKey="count" fill="#008e3e" radius={[0, 4, 4, 0]} barSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* BMI Distribution */}
+          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <ActivitySquare className="w-4 h-4 text-[#0ea5e9]" />
+              BMI Distribution
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={bmiData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {bmiData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={BRAND_COLORS[index % BRAND_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
+                    itemStyle={{ color: '#e2e8f0' }}
+                  />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }}/>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Telemedicine Status */}
+          <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Stethoscope className="w-4 h-4 text-[#002d64]" />
+              Consultation Status
+            </h3>
+            <div className="h-64">
+              {consultData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={consultData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
+                    >
+                      {consultData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={BRAND_COLORS[(index + 2) % BRAND_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip 
+                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
+                      itemStyle={{ color: '#e2e8f0' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                  No consultations booked yet.
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
 
         {/* Users Table & Filters */}
         <section className="bg-slate-900/20 border border-slate-900/80 rounded-2xl overflow-hidden shadow-xl">
