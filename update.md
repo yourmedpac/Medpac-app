@@ -130,3 +130,9 @@ flutter run
   - **Path:** [app-release.apk](file:///c:/Users/prabh/OneDrive/Documents/applications/Medpac%20health%20os/medpac_mobile/build/app/outputs/flutter-apk/app-release.apk)
   - **Size:** 49.4MB
 
+### 5. Supabase Database Link & Schema Migration
+- **Supabase Token & Project ID:** Detected active project `Medpac-app` (ref ID `wpmcnlnzgszwwugumbpj`) and saved the management access token in [.env](file:///c:/Users/prabh/OneDrive/Documents/applications/Medpac%20health%20os/.env).
+- **Password Reset:** Successfully reset the database password of the Supabase project `wpmcnlnzgszwwugumbpj` to `Medpac12care@` using a PATCH request to the Supabase API.
+- **Schema Migration:** Set `DATABASE_URL` in `.env` and executed `npm run db:push`. All database tables (`User`, `Profile`, `MedicalReport`, `Finding`, `Medication`, `Consultation`, and `VitalReading`) are now successfully initialized in the live Supabase PostgreSQL instance.
+- **Build Verification:** Successfully verified the web build using `npm run build` after the client generation.
+
