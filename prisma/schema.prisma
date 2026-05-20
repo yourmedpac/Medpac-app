@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  phone           String?          @unique
+  name            String?
+  role            Role             @default(USER)
+  isQuizCompleted Boolean          @default(false)
+  profile         Profile?
+  reports         MedicalReport[]
+  medications     Medication[]
+  consultations   Consultation[]
+  vitals          VitalReading[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Profile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age                 Int?
+  gender              String?
+  weight              Float?
+  height              Float?
+  bmi                 Float?
+  bmiCategory         String?
+  dietaryPreference   String?
+  dietTypePersonality String?
+  mealCount           Int      @default(3)
+  waterIntake         Float    @default(8.0)
+  moodBehavior        String[]
+  stressLevel         String?
+  exerciseFrequency   String?
+  activityLevel       String?
+  existingConditions  String[]
+  medications         String[]
+  familyHistory       String[]
+  sleepHours          Float    @default(7.0)
+  smokingStatus       String?
+  alcoholConsumption  String?
+  healthGoals         String[]
+  focusArea           String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model MedicalReport {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  summary     String?
+  riskLevel   String    @default("NORMAL") // NORMAL, ATTENTION, ACTION
+  suggestions String[]
+  findings    Finding[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Finding {
+  id             String        @id @default(cuid())
+  reportId       String
+  report         MedicalReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  parameter      String
+  value          String
+  referenceRange String?
+  isAbnormal     Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Medication {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  dosage            String
+  instructions      String?
+  frequency         String
+  totalDoses        Int       @default(30)
+  remainingDoses    Int       @default(30)
+  lastTaken         DateTime?
+  nextDue           DateTime?
+  isRefillRequired  Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Consultation {
+  id           String             @id @default(cuid())
+  userId       String
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorName   String
+  specialty    String
+  timeSlot     String
+  status       ConsultationStatus @default(SCHEDULED)
+  videoRoomUrl String?
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model VitalReading {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // BLOOD_PRESSURE, HEART_RATE, OXYGEN, BLOOD_GLUCOSE
+  value     String
+  unit      String
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+}
