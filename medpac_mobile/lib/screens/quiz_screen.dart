@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../user_state.dart';
+
 
 // --- Constants ---
 const int totalSteps = 12;
